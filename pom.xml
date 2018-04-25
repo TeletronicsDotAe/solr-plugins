@@ -9,7 +9,7 @@
     </parent>
     <groupId>ae.teletronics.solr</groupId>
     <artifactId>solr-plugins</artifactId>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
 
     <name>solr-plugins</name>
     <description>A set of solr plugins, that enables more visibility into a solr installation</description>
@@ -30,7 +30,7 @@
         <url>https://github.com/TeletronicsDotAe/solr-plugins</url>
         <connection>scm:git:git@github.com:TeletronicsDotAe/solr-plugins.git</connection>
         <developerConnection>scm:git:git@github.com:TeletronicsDotAe/solr-plugins.git</developerConnection>
-      <tag>v0.2</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <properties>
