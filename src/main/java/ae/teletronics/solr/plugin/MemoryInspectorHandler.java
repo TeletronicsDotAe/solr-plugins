@@ -33,15 +33,22 @@ import java.util.stream.Collectors;
  */
 public class MemoryInspectorHandler extends RequestHandlerBase implements SolrCoreAware {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private SolrCore core;
 	private CoreContainer coreContainer;
 
 	@Override
 	public void handleRequestBody(SolrQueryRequest request, SolrQueryResponse response) {
-		Accountable memory = inspectCoreContainer(coreContainer);
-		if (request.getParams().getBool("dumpToStdOut", false)) {
-			log.info(Accountables.toString(memory));
+		Accountable memory;
+		if (coreContainer != null) {
+			memory = inspectCoreContainer(coreContainer);
+			if (request.getParams().getBool("dumpToStdOut", false)) {
+				log.info(Accountables.toString(memory));
+			}
+		} else {
+			memory = () -> 0;
 		}
-		response.add("Memory dump", toMap(memory));
+		Map<String, ?> map = toMap(memory);
+		response.add("Memory dump", map);
 	}
 
 	private static Map<String, ?> toMap(Accountable accountable) {
@@ -55,7 +62,8 @@ public class MemoryInspectorHandler extends RequestHandlerBase implements SolrCo
 	}
 
 	private Accountable inspectCoreContainer(CoreContainer coreContainer) {
-		Collection<Accountable> children = coreContainer.getCores().stream().map(c -> inspectCore(c)).collect(Collectors.toList());
+		Collection<SolrCore> cores = (coreContainer.getCores() != null) ? coreContainer.getCores() : Collections.emptyList();
+		Collection<Accountable> children = cores.stream().map(c -> inspectCore(c)).collect(Collectors.toList());
 		String name = String.format("Solr cores (count: %s)", children.size());
 		return Accountables.namedAccountable(name, children, children.stream().mapToLong(Accountable::ramBytesUsed).sum());
 	}
@@ -75,7 +83,7 @@ public class MemoryInspectorHandler extends RequestHandlerBase implements SolrCo
 	private Accountable inspectSearcher(SolrIndexSearcher searcher) {
 		Collection<Accountable> children = new ArrayList<>();
 		children.add(inspectIndexReader(searcher.getIndexReader()));
-		String name = String.format("Searcher (maxDocs: %s, debugInfo: '%s')", searcher.maxDoc(), searcher.toString());
+		String name = String.format("Searcher '%s' (numDocs: %s, maxDocs: %s)", searcher.getName(), searcher.numDocs(), searcher.maxDoc());
 		return Accountables.namedAccountable(name, children, children.stream().mapToLong(Accountable::ramBytesUsed).sum());
 	}
 
@@ -100,7 +108,8 @@ public class MemoryInspectorHandler extends RequestHandlerBase implements SolrCo
 						return inspectIndexReader(reader);
 					}
 				}).collect(Collectors.toList());
-				result = Accountables.namedAccountable(indexReader.toString(), children, children.stream().mapToLong(Accountable::ramBytesUsed).sum());
+				String name = String.format("IndexReader '%s', segments: %s", indexReader.getClass().getName(), indexReader.leaves().size());
+				result = Accountables.namedAccountable(name, children, children.stream().mapToLong(Accountable::ramBytesUsed).sum());
 			}
 		}
 		return result;
@@ -119,7 +128,7 @@ public class MemoryInspectorHandler extends RequestHandlerBase implements SolrCo
 	}
 
 	public Category getCategory() {
-		return Category.QUERYHANDLER;
+		return Category.ADMIN;
 	}
 
 	public String getSource() {
@@ -132,12 +141,14 @@ public class MemoryInspectorHandler extends RequestHandlerBase implements SolrCo
 
 	public NamedList getStatistics() {
 		NamedList result = new SimpleOrderedMap<String>();
-		result.add("Memory usage", Accountables.toString(inspectCoreContainer(coreContainer)));
+		long memoryUsage = (core != null) ? inspectCore(core).ramBytesUsed() : 0;
+		result.add("Memory usage", memoryUsage);
 		return result;
 	}
 
 	@Override
 	public void inform(SolrCore solrCore) {
+		this.core = solrCore;
 		this.coreContainer = solrCore.getCoreDescriptor().getCoreContainer();
 	}
 }

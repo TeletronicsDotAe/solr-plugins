@@ -16,6 +16,7 @@ import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 public class MemoryInspectorTest extends SolrTestBase {
@@ -42,7 +43,15 @@ public class MemoryInspectorTest extends SolrTestBase {
 	public void testMemoryInspection() throws IOException, SolrServerException {
 		GenericSolrRequest request = new GenericSolrRequest(SolrRequest.METHOD.GET, "/admin/memory", null);
 		NamedList<Object> response = server.request(request);
-		Assert.assertEquals(2, response.asMap(2).size());
+		Map map = response.asMap(2);
+		Assert.assertEquals(2, map.size());
+	}
+
+	@Test
+	public void testUninitialisedStatistics() throws IOException, SolrServerException {
+		MemoryInspectorHandler cut = new MemoryInspectorHandler();
+		NamedList statistics = cut.getStatistics();
+		Assert.assertEquals(1, statistics.asMap(2).size());
 	}
 
 	@Test
@@ -59,4 +68,6 @@ public class MemoryInspectorTest extends SolrTestBase {
 		// Then
 		Assert.assertEquals(1, logger.getLoggingEvents().stream().filter(event -> event.getMessage().contains("Solr core")).count());
 	}
+
+
 }

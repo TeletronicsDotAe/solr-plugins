@@ -86,7 +86,7 @@ public class ThreadRenamingRequestHandler extends RequestHandlerBase implements 
 	}
 
 	public Category getCategory() {
-		return Category.QUERYHANDLER;
+		return Category.ADMIN;
 	}
 
 	public String getSource() {
