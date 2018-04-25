@@ -30,8 +30,8 @@
 
     <scm>
         <url>https://github.com/TeletronicsDotAe/solr-plugins</url>
-        <connection>scm:git:git://github.com/TeletronicsDotAe/solr-plugins.git</connection>
-        <developerConnection>scm:git:git://github.com/TeletronicsDotAe/solr-plugins.git</developerConnection>
+        <connection>scm:git:git@github.com:TeletronicsDotAe/solr-plugins.git</connection>
+        <developerConnection>scm:git:git@github.com:TeletronicsDotAe/solr-plugins.git</developerConnection>
     </scm>
 
     <properties>
