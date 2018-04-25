@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -9,7 +11,7 @@
     </parent>
     <groupId>ae.teletronics.solr</groupId>
     <artifactId>solr-plugins</artifactId>
-    <version>0.2</version>
+    <version>0.2-SNAPSHOT</version>
 
     <name>solr-plugins</name>
     <description>A set of solr plugins, that enables more visibility into a solr installation</description>
@@ -28,10 +30,9 @@
 
     <scm>
         <url>https://github.com/TeletronicsDotAe/solr-plugins</url>
-        <connection>https://github.com/TeletronicsDotAe/solr-plugins.git</connection>
+        <connection>scm:git:git://github.com/TeletronicsDotAe/solr-plugins.git</connection>
         <developerConnection>scm:git:git://github.com/TeletronicsDotAe/solr-plugins.git</developerConnection>
-      <tag>v0.2</tag>
-  </scm>
+    </scm>
 
     <properties>
         <solr.version>6.5.0</solr.version>
