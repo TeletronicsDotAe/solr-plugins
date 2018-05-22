@@ -6,11 +6,10 @@ import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.util.Accountable;
 import org.apache.lucene.util.Accountables;
 import org.apache.lucene.util.RamUsageEstimator;
-import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.RequestHandlerBase;
+import org.apache.solr.metrics.SolrMetricManager;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.SolrIndexSearcher;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
@@ -131,24 +129,17 @@ public class MemoryInspectorHandler extends RequestHandlerBase implements SolrCo
 		return Category.ADMIN;
 	}
 
-	public String getSource() {
-		return null;
-	}
-
-	public URL[] getDocs() {
-		return new URL[0];
-	}
-
-	public NamedList getStatistics() {
-		NamedList result = new SimpleOrderedMap<String>();
-		long memoryUsage = (core != null) ? inspectCore(core).ramBytesUsed() : 0;
-		result.add("Memory usage", memoryUsage);
-		return result;
+	@Override
+	public void initializeMetrics(SolrMetricManager manager, String registryName, String scope) {
+		super.initializeMetrics(manager, registryName, scope);
+		manager.registerGauge(this, registryName, () -> {
+			return (core != null) ? inspectCore(core).ramBytesUsed() : 0;
+		}, true, "memoryUsed", new String[]{this.getCategory().toString(), scope});
 	}
 
 	@Override
 	public void inform(SolrCore solrCore) {
 		this.core = solrCore;
-		this.coreContainer = solrCore.getCoreDescriptor().getCoreContainer();
+		this.coreContainer = solrCore.getCoreContainer();
 	}
 }

@@ -2,15 +2,14 @@ package ae.teletronics.solr.plugin;
 
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.RequestHandlerBase;
+import org.apache.solr.metrics.SolrMetricManager;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.util.plugin.SolrCoreAware;
 
-import java.net.URL;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
  * statistics in the solr admin gui.
  */
 public class ThreadRenamingRequestHandler extends RequestHandlerBase implements SolrCoreAware {
-	private static ConcurrentMap<Thread, String> executingThreads = new ConcurrentHashMap<Thread, String>();
+	private ConcurrentMap<Thread, String> executingThreads = new ConcurrentHashMap<>();
 	private String delegateName;
 	private SolrRequestHandler delegate;
 
@@ -65,20 +64,16 @@ public class ThreadRenamingRequestHandler extends RequestHandlerBase implements 
 		}
 	}
 
-	public static int getRunningRequestCount() {
+	public int getRunningRequestCount() {
 		return executingThreads.size();
 	}
 
-	public static List<String> getRunningRequests() {
+	public List<String> getRunningRequests() {
 		return executingThreads.keySet().stream().map(Thread::getName).collect(Collectors.toList());
 	}
 
 	public String getName() {
 		return "ThreadRenamingRequestHandlerDelegate";
-	}
-
-	public String getVersion() {
-		return "1.0";
 	}
 
 	public String getDescription() {
@@ -89,24 +84,9 @@ public class ThreadRenamingRequestHandler extends RequestHandlerBase implements 
 		return Category.ADMIN;
 	}
 
-	public String getSource() {
-		return null;
-	}
-
-	public URL[] getDocs() {
-		return new URL[0];
-	}
-
-	public NamedList getStatistics() {
-		NamedList result = new SimpleOrderedMap<String>();
-		executingThreads.forEach((thread, originalThreadName) -> {
-			String currentName = thread.getName();
-
-			// Skip threads JUST finished
-			if (!currentName.equals(originalThreadName)) {
-				result.add(originalThreadName, currentName);
-			}
-		});
-		return result;
+	@Override
+	public void initializeMetrics(SolrMetricManager manager, String registryName, String scope) {
+		super.initializeMetrics(manager, registryName, scope);
+		manager.registerGauge(this, registryName, () -> executingThreads.size(), true, "runningRequests", new String[]{this.getCategory().toString(), scope});
 	}
 }

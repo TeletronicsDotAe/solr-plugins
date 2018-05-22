@@ -7,6 +7,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.metrics.SolrMetricManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +23,7 @@ import java.util.stream.IntStream;
 public class MemoryInspectorTest extends SolrTestBase {
 
 	@Before
-	public void init() throws IOException, SolrServerException {
+	public void init() {
 		IntStream.range(0, 20).forEach(i -> {
 			SolrInputDocument doc = new SolrInputDocument();
 			doc.addField("id", Integer.valueOf(i));
@@ -37,7 +38,7 @@ public class MemoryInspectorTest extends SolrTestBase {
 	}
 
 	/**
-	 * Sunshine - renaming is done properly
+	 * Sunshine
 	 */
 	@Test
 	public void testMemoryInspection() throws IOException, SolrServerException {
@@ -48,10 +49,11 @@ public class MemoryInspectorTest extends SolrTestBase {
 	}
 
 	@Test
-	public void testUninitialisedStatistics() throws IOException, SolrServerException {
-		MemoryInspectorHandler cut = new MemoryInspectorHandler();
-		NamedList statistics = cut.getStatistics();
-		Assert.assertEquals(1, statistics.asMap(2).size());
+	public void testMetricsInMetricRegistry() {
+		SolrMetricManager metricManager = coreContainer.getMetricManager();
+		Long collection1MemoryUsage = (Long) metricManager.registry("solr.core.collection1").getGauges().get("ADMIN./admin/memory.memoryUsed").getValue();
+		Assert.assertNotNull(collection1MemoryUsage);
+		Assert.assertTrue(collection1MemoryUsage > 0l);
 	}
 
 	@Test

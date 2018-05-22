@@ -34,7 +34,7 @@
   </scm>
 
     <properties>
-        <solr.version>6.5.0</solr.version>
+        <solr.version>7.3.0</solr.version>
     </properties>
 
     <dependencies>

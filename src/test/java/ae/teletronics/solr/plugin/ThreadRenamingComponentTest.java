@@ -5,7 +5,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.SolrCore;
-import org.apache.solr.request.SolrRequestHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,28 +75,22 @@ public class ThreadRenamingComponentTest extends SolrTestBase {
 	 */
 	@Test
 	public void testStatisticsReturnRunningThreads() throws IOException, SolrServerException {
-		AtomicReference<NamedList> statistics = new AtomicReference<>(null);
 		AtomicReference<List<String>> runningRequests = new AtomicReference<>(null);
 
 		ForwardingSearchHandler.setDelegate((req, res) -> {
 			SolrCore core = h.getCoreContainer().getCore("collection1");
-			SolrRequestHandler requestHandler = core.getRequestHandler("/threadnametest");
+			ThreadRenamingRequestHandler requestHandler = (ThreadRenamingRequestHandler) core.getRequestHandler("/threadnametest");
 			core.close();
-			NamedList statistics1 = requestHandler.getStatistics();
-			statistics.set(statistics1);
-			runningRequests.set(ThreadRenamingRequestHandler.getRunningRequests());
-			assertEquals(1, ThreadRenamingRequestHandler.getRunningRequestCount());
+			runningRequests.set(requestHandler.getRunningRequests());
 		});
 
 		SolrQuery query = new SolrQuery("*:*");
 		QueryRequest request = new QueryRequest(query);
 		request.setPath("/threadnametest");
-		NamedList<Object> response = server.request(request);
+		server.request(request);
 
 		assertNotNull(runningRequests.get());
 		assertEquals(1, runningRequests.get().size());
-		assertNotNull(statistics.get());
-		assertEquals(1, statistics.get().size());
 	}
 
 }
