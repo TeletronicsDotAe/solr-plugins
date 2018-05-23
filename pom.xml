@@ -9,7 +9,7 @@
     </parent>
     <groupId>ae.teletronics.solr</groupId>
     <artifactId>solr-plugins</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3</version>
 
     <name>solr-plugins</name>
     <description>A set of solr plugins, that enables more visibility into a solr installation</description>
